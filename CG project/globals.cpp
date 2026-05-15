@@ -1,42 +1,32 @@
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#include "globals.h"
 
-#include <vector>
-#include "constants.h"
+GameState   gState  = MENU;
+int         menuSel = 0;
 
-// Game state
-extern GameState   gState;
-extern int         menuSel;
+float       padX    = W / 2.0f;
+float       padW    = PAD_DEF_W;
+Ball        ball;
 
-// Gameplay objects
-extern float       padX;
-extern float       padW;
-extern Ball        ball;
+std::vector<Block>    blocks;
+std::vector<Perk>     perks;
+std::vector<Bullet>   bullets;
+std::vector<Particle> particles;
+std::vector<Star>     stars;
+std::vector<HSEntry>  highScores;
 
-extern std::vector<Block>    blocks;
-extern std::vector<Perk>     perks;
-extern std::vector<Bullet>   bullets;
-extern std::vector<Particle> particles;
-extern std::vector<Star>     stars;
-extern std::vector<HSEntry>  highScores;
+int   lives       = INITIAL_LIVES;
+int   score       = 0;
+int   level       = 1;
+int   totalBreak  = 0;
+int   broken      = 0;
+float elapsed     = 0.0f;
+float speedMult   = 1.0f;
 
-// Numbers
-extern int   lives;
-extern int   score;
-extern int   level;
-extern int   totalBreak;
-extern int   broken;
-extern float elapsed;
-extern float speedMult;
+float fireTimer   = 0.0f;
+float shootTimer  = 0.0f;
+float shootCD     = 0.0f;
 
-// Perk timers
-extern float fireTimer;
-extern float shootTimer;
-extern float shootCD;
 
-// Input flags
-extern bool  leftKey;
-extern bool  rightKey;
-extern int   lastMs;
-
-#endif
+bool  leftKey     = false;
+bool  rightKey    = false;
+int   lastMs      = 0;
