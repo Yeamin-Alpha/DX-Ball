@@ -4,7 +4,6 @@
 #include "game.h"
 #include "globals.h"
 
-// ---------- STARFIELD ----------
 void initStars(){
     stars.clear();
     for(int i=0;i<150;i++){
@@ -16,7 +15,7 @@ void initStars(){
     }
 }
 
-// ---------- PARTICLES ----------
+
 void spawnParticles(float x,float y,Col3 col,int n){
     for(int i=0;i<n;i++){
         float a=2.0f*(float)M_PI*rand()/RAND_MAX;
@@ -43,7 +42,7 @@ void updateParticles(float dt){
     );
 }
 
-// ---------- LEVEL SETUP ----------
+
 void setupLevel(int lvl){
     blocks.clear(); perks.clear(); bullets.clear(); particles.clear();
     broken=0; totalBreak=0;
@@ -56,9 +55,9 @@ void setupLevel(int lvl){
             b.alive=true;
 
             int r=rand()%100;
-            int steelP  = (lvl-1)*4;           //  0 / 4 / 8
-            int brickP  = 10+(lvl-1)*6;         // 10/16/22
-            int hardP   = 15+(lvl-1)*5;         // 15/20/25
+            int steelP  = (lvl-1)*4;
+            int brickP  = 10+(lvl-1)*6;
+            int hardP   = 15+(lvl-1)*5;
 
             if     (r<steelP)             { b.type=BLK_STEEL;  b.hp=999; }
             else if(r<steelP+brickP)      { b.type=BLK_BRICK;  b.hp=3;   }
@@ -66,7 +65,7 @@ void setupLevel(int lvl){
             else                          { b.type=BLK_NORMAL; b.hp=1;   }
 
             int ci=rand()%3;
-            // Block colour palette defined in render.cpp, but we use the same logic
+
             switch(b.type){
                 case BLK_NORMAL:
                     b.col = (ci==0)?Col3{1.0f,0.35f,0.35f} :
@@ -94,7 +93,7 @@ void setupLevel(int lvl){
     }
 }
 
-// ---------- BALL / PADDLE RESET ----------
+
 void resetBall(bool waitForLaunch){
     ball.x  = padX;
     ball.y  = PAD_Y + PAD_H + BALL_R + 2.0f;
@@ -108,14 +107,13 @@ void resetBall(bool waitForLaunch){
 
 void initGame(){
     padX=W/2.0f; padW=PAD_DEF_W;
-    lives=3; score=0; level=1; elapsed=0.0f; speedMult=1.0f;
+    lives=INITIAL_LIVES; score=0; level=1; elapsed=0.0f; speedMult=1.0f;
     fireTimer=0; shootTimer=0; shootCD=0;
     leftKey=false; rightKey=false;
     setupLevel(level);
     resetBall(true);
 }
 
-// ---------- PERKS ----------
 void applyPerk(PerkType t){
     switch(t){
     case PK_LIFE:
@@ -167,7 +165,6 @@ void spawnPerk(float x,float y){
     perks.push_back({x,y,t,true});
 }
 
-// ---------- COLLISION ----------
 bool circleAABB(float bx,float by,float br,
                 float rx,float ry,float rw,float rh,
                 float& nx,float& ny)
@@ -189,13 +186,13 @@ void reflectVel(float& vx,float& vy,float nx,float ny){
     vy-=2.0f*dot*ny;
 }
 
-// ---------- UPDATE ----------
+
 void update(float dt){
     if(gState!=PLAYING) return;
 
     elapsed+=dt;
 
-    // auto speed ramp every 25 s
+
     float newMult = 1.0f + (int)(elapsed/25.0f)*0.15f;
     if(newMult>speedMult){
         float ratio=newMult/speedMult;
@@ -203,12 +200,12 @@ void update(float dt){
         speedMult=newMult;
     }
 
-    // perk timers
+
     if(fireTimer>0){ fireTimer-=dt; if(fireTimer<=0){fireTimer=0;ball.fire=false;} }
     if(shootTimer>0){ shootTimer-=dt; if(shootTimer<=0) shootTimer=0; }
     if(shootCD>0) shootCD-=dt;
 
-    // paddle movement
+
     if(leftKey)  padX-=PAD_SPEED*dt;
     if(rightKey) padX+=PAD_SPEED*dt;
     padX=fmaxf(padW/2.0f, fminf((float)W-padW/2.0f, padX));
@@ -218,16 +215,16 @@ void update(float dt){
 
     if(!ball.active) return;
 
-    // move ball
+
     ball.x+=ball.vx*dt;
     ball.y+=ball.vy*dt;
 
-    // wall bounces
+
     if(ball.x-BALL_R<0)          { ball.x=BALL_R;        if(ball.vx<0) ball.vx=-ball.vx; }
     if(ball.x+BALL_R>(float)W)   { ball.x=(float)W-BALL_R; if(ball.vx>0) ball.vx=-ball.vx; }
     if(ball.y+BALL_R>(float)PLAY_H){ ball.y=(float)PLAY_H-BALL_R; if(ball.vy>0) ball.vy=-ball.vy; }
 
-    // paddle collision
+
     if(ball.vy<0.0f){
         float px=padX-padW/2.0f;
         float nx,ny;
@@ -242,7 +239,7 @@ void update(float dt){
         }
     }
 
-    // ball lost
+
     if(ball.y-BALL_R<0.0f){
         lives--;
         if(lives<=0){ lives=0; gState=GAMEOVER; }
@@ -250,7 +247,7 @@ void update(float dt){
         return;
     }
 
-    // block collisions
+
     for(auto& b:blocks){
         if(!b.alive) continue;
         float nx,ny;
@@ -271,7 +268,7 @@ void update(float dt){
         }
     }
 
-    // level complete
+
     if(broken>=totalBreak){
         int bonus=fmaxf(0.0f, 3000.0f - elapsed*8.0f);
         score+=bonus;
@@ -290,7 +287,7 @@ void update(float dt){
         return;
     }
 
-    // move perks
+
     for(auto& p:perks){
         if(!p.alive) continue;
         p.y-=95.0f*dt;
@@ -303,7 +300,7 @@ void update(float dt){
     perks.erase(std::remove_if(perks.begin(),perks.end(),
                 [](const Perk&p){return !p.alive;}),perks.end());
 
-    // bullets
+
     for(auto& b:bullets){
         if(!b.alive) continue;
         b.y+=400.0f*dt;
